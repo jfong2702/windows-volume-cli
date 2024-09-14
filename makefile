@@ -13,9 +13,9 @@ all: $(OUTPUT_NAME)
 $(OUTPUT_NAME): $(CFILES)
 	cl $(CFILES) $(CPP_FLAGS) $(LIBRARIES) /Fe$(OUTPUT_NAME)
 
-# use nmake release VERSION=X_XX
+# use nmake release VERSION=X.X.X
 release:
-	cp vol.exe "vol_$(VERSION).exe"
+	copy vol.exe bin^\"vol_$(VERSION).exe"
 
 clean:
 	del $(OUTPUT_NAME)
