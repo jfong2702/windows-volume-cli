@@ -2,8 +2,16 @@
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 #include <iostream>
+#include "arguments.hpp"
 
-int main() {
+int main(int argc, char** argv) {
+
+    /* Parse arguments to determine behavior */
+    if(parseArgs(argv, argc) != SUCCESS)
+    {
+        return -1;
+    }
+
     HRESULT hr;
 
     // Initialize COM library
@@ -42,17 +50,35 @@ int main() {
         return -1;
     }
 
-    // Set the master volume (0.0 = mute, 1.0 = max volume)
-    float newVolume = 0.5f;  // 50% volume
-    hr = pVolume->SetMasterVolumeLevelScalar(newVolume, NULL);
-    if (FAILED(hr)) {
-        std::cerr << "Failed to set master volume. Error code: 0x" << std::hex << hr << std::endl;
-        pVolume->Release();  // Release the volume object
-        CoUninitialize();
-        return -1;
+    if (args.query) {
+        // Query the current master volume level
+        float currentVolume = 0.0f;
+        hr = pVolume->GetMasterVolumeLevelScalar(&currentVolume);
+        if (FAILED(hr)) {
+            std::cerr << "Failed to get master volume. Error code: 0x" << std::hex << hr << std::endl;
+            pVolume->Release();  // Release the volume object
+            CoUninitialize();
+            return -1;
+        }
+
+        // Print the current volume level
+        std::cout << "Current volume level: " << (currentVolume * 100) << "%" << std::endl;
     }
 
-    std::cout << "Volume set to 50%." << std::endl;
+
+    // Set the master volume (0.0 = mute, 1.0 = max volume)
+    if(args.set)
+    {
+        hr = pVolume->SetMasterVolumeLevelScalar(args.set_val, NULL);
+        if (FAILED(hr)) {
+            std::cerr << "Failed to set master volume. Error code: 0x" << std::hex << hr << std::endl;
+            pVolume->Release();  // Release the volume object
+            CoUninitialize();
+            return -1;
+        }
+
+        std::cout << "Set volume to " << (args.set_val * 100) << "%" << std::endl;
+    }
 
     // Clean up
     pVolume->Release();
